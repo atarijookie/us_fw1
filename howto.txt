@@ -1,0 +1,44 @@
+How to flash the new firmware to UltraSatan
+-------------------------------------------
+
+
+1. Copy the 'us_conf.prg' 
+   (from http://joo.kie.sk/ultrasatan/download/config.zip)
+   and us*.ldr
+   (from http://joo.kie.sk/ultrasatan/download/us_fw.zip)
+   to a floppy disk.
+
+2. Connect your UltraSatan to ATARI, start as usual
+
+3. Start the 'us_conf.prg' from floppy and it will find your UltraSatan
+
+4. Move down in the 'Firmware list' using arrows to some position
+   (please note that you can't upload new firmware to the position
+   of base firmware)
+
+5. Press the 'u' key and a file selection dialog will appear
+
+6. Find the *.ldr file on the floppy (A:) and press 'OK'
+
+7. Press the 'r' key to refresh the 'Firmware list' and the 
+   newly uploaded firmware will appear.
+
+8. Move to the new firmware by arrows and press space to select it.
+
+9. Press 'w' to write these new settings to your UltraSatan.
+
+10. Turn off the ST and UltraSatan.
+
+11. When you turn on your ST and UltraSatan again, it should be
+    running the new firmware. You can check it by starting the
+    us_conf.prg again and by watching the firmware version string
+    (when it finds your UltraSatan, it will write something like
+    'Firmware: UltraSatan v1.05 (by Jookie)' )
+
+Please note, that if you are uploading the new firmware to fix some 
+bug related to the communication with your Atari, you should do it
+on a machine which doesn't have that problem, i.e. if you are
+fixing the communication with TT issue, upload the firmware from ST.
+
+
+Jookie, 2009-12-20
