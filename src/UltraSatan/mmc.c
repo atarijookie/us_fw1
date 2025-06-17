@@ -289,7 +289,7 @@ BYTE mmcCommand(BYTE cmd, DWORD arg)
 	spiTransferByte(arg);
 
 	if(cmd == SDHC_SEND_IF_COND)
-		spiTransferByte(0x86);	 			// crc valid only for SDHC_SEND_IF_COND
+		spiTransferByte(0x87);	 			// crc valid only for SDHC_SEND_IF_COND
 	else
 		spiTransferByte(0x95);	 			// crc valid only for MMC_GO_IDLE_STATE
 
