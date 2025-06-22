@@ -1,9 +1,13 @@
 /* MANAGED-BY-SYSTEM-BUILDER                                    */
+/* VisualDSP++ 5.1.2                                            */
+/* CRT Printer version: 5.9.0.1                                 */
+/* crtgen.exe version: 5.9.0.1                                  */
+/* VDSG version: 5.9.0.1                                        */
 
 /*
-** UltraSatan_basiccrt.s generated on Feb 24, 2008 at 19:04:58.
+** UltraSatan_basiccrt.s generated on Jun 23, 2025 at 23:19:13.
 **
-** Copyright (C) 2000-2007 Analog Devices Inc., All Rights Reserved.
+** Copyright (C) 2000-2010 Analog Devices Inc., All Rights Reserved.
 ** This contains Analog Devices Background IP and Development IP as
 ** defined in the ADI/Intel Collaboration Agreement.
 **
@@ -16,6 +20,7 @@
 ** This code is preserved if the CRT is re-generated.
 **
 ** Configuration:-
+**     product_name:                 VisualDSP++ 5.1.2
 **     processor:                    ADSP-BF531
 **     si_revision:                  automatic
 **     cplb_init:                    false
@@ -24,7 +29,9 @@
 **     init_regs:                    true
 **     zero_return_regs:             true
 **     use_profiling:                false
+**     use_vdk:                      false
 **     set_clock_and_power:          false
+**     detect_stackoverflow:         false
 **
 */
 
@@ -46,6 +53,14 @@
 	.align 2;
 
 start:
+
+
+/*$VDSG<insert-code-very-beginning>                             */
+.start_of_user_code_very_beginning:
+  // Insert additional code to be executed before any other Startup Code here.
+  // This code is preserved if the CRT is re-generated.
+.end_of_user_code_very_beginning:
+/*$VDSG<insert-code-very-beginning>                             */
 
 /////////////////////////////////////////////////////////////////
 // blackfin-edinburgh-core
@@ -79,7 +94,7 @@ start:
 	LC0 = R7;
 	LC1 = R7;
 
-	// Clear the DAG Length regs, to force linerar addressing
+	// Clear the DAG Length regs, to force linear addressing
 	L0 = R7;
 	L1 = R7;
 	L2 = R7;
@@ -132,11 +147,19 @@ start:
 	// Make space for incoming "parameters" for functions
 	// we call from here:
 	SP += -12;
-
+	
 	R0 = INTERRUPT_BITS;
 	R0 <<= 5;	// Bits 0-4 not settable.
-	CALL.X __install_default_handlers;
 
+/////////////////////////////////////////////////////////////////
+// install-default-handlers
+	CALL.X __install_default_handlers;
+	
+.extern __install_default_handlers;
+.type __install_default_handlers,STT_FUNC;	
+
+/////////////////////////////////////////////////////////////////
+// standard
 	R1 = SYSCFG;
 	R4 = R0;		// Save modified list
 	BITSET(R1,1);
@@ -144,7 +167,7 @@ start:
 
 /////////////////////////////////////////////////////////////////
 // blackfin-edinburgh-core
-#if WA_05000137
+#if WA_05000137 || WA_05000162
 	// Avoid Anomaly 02-00-0137
 	// Set the port preferences of DAG0 and DAG1 to be
 	// different; this gives better performance when
@@ -281,15 +304,11 @@ supervisor_mode:
 
 .global start;
 .type start,STT_FUNC;
-.global .start.end;
-.type .start.end,STT_FUNC;
 .extern _main;
 .type _main,STT_FUNC;
 .extern ldf_stack_end;
 .extern __unknown_exception_occurred;
 .type __unknown_exception_occurred,STT_FUNC;
-.extern __install_default_handlers;
-.type __install_default_handlers,STT_FUNC;
 
 
 /////////////////////////////////////////////////////////////////
@@ -306,6 +325,14 @@ _dev_write:
 _dev_read:
 _dev_seek:
 _dev_dup:
+#if WA_05000371
+	/* Avoid anomaly 05-00-0371 by ensuring 4 instructions
+	** before an RTS.
+	*/
+	NOP;
+	NOP;
+	NOP;
+#endif
 	R0 = -1;
 	RTS;
 ._dev_open.end:
