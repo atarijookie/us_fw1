@@ -1,3 +1,9 @@
+version 1.30
+- date: 24-06-2025
+- fix CRC stop bit during SD card initialization - contributed by Vincent Riviere
+  this adds support for recent cards, including SDHC and SDXC with large capacity
+
+
 version 1.20
 - date: 28-01-2014
 - some small fixes were made to the SCSI part of the code to better comply with the
