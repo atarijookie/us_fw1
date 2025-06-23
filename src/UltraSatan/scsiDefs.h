@@ -2,10 +2,10 @@
 // INQUIRY              x
 // REQUEST SENSE        x
 // SEND DIAGNOSTIC      x
-// TEST UNIT READY      x 
+// TEST UNIT READY      x
 // FORMAT UNIT          x
 // READ(6)              x
-// READ(10)             x              
+// READ(10)             x
 // READ CAPACITY        x
 // RELEASE              x
 // RESERVE              x
@@ -14,11 +14,11 @@
 #define SCSI_C_WRITE6                           0x0a
 #define SCSI_C_READ6                            0x08
 #define SCSI_C_MODE_SENSE6                      0x1a
-#define SCSI_C_START_STOP_UNIT                  0x1b	
-#define SCSI_C_FORMAT_UNIT                      0x04	
-#define SCSI_C_INQUIRY                          0x12	
-#define SCSI_C_REQUEST_SENSE                    0x03	
-#define SCSI_C_TEST_UNIT_READY                  0x00	
+#define SCSI_C_START_STOP_UNIT                  0x1b
+#define SCSI_C_FORMAT_UNIT                      0x04
+#define SCSI_C_INQUIRY                          0x12
+#define SCSI_C_REQUEST_SENSE                    0x03
+#define SCSI_C_TEST_UNIT_READY                  0x00
 #define SCSI_C_SEND_DIAGNOSTIC                  0x1d
 #define SCSI_C_RESERVE                          0x16
 #define SCSI_C_RELEASE                          0x17
@@ -67,7 +67,7 @@
 #define SCSI_ASC_LU_NOT_SUPPORTED               0x25
 #define SCSO_ASC_INVALID_FIELD_IN_CDB           0x24
 #define SCSI_ASC_VERIFY_MISCOMPARE              0x1d
-#define SCSI_ASC_MEDIUM_NOT_PRESENT             0x3A     
+#define SCSI_ASC_MEDIUM_NOT_PRESENT             0x3A
 
 // SCSI ADITIONAL SENSE CODE QUALIFIER
 #define SCSI_ASCQ_FORMAT_IN_PROGRESS            0x04
@@ -80,4 +80,3 @@
 #define SCSI_ASCQ_INQUIRY_data_has_changed      0x03
 
 #define SCSI_ASC_NOT_READY_TO_READY_TRANSITION  0x28
-

@@ -12,7 +12,7 @@ _SetupClocks:
 	[--sp] = r1;
 	[--sp] = r2;
 	[--sp] = p0;
-	
+
 	//-----------
 	p0.h = HI(SIC_IWR);			// PLL WAKEUP enable
 	p0.l = LO(SIC_IWR);
@@ -41,15 +41,15 @@ _SetupClocks:
 	//-----------
 	cli r0;						// dissable interrupts
 	w[p0] = r2;					// write the new PLL_CTL
-	
+
 	idle;						// go IDLE and wait for PLL WAKEUP
-	sti r0;							
+	sti r0;
 	//-----------
 	p0 = [sp++];				// pop regs from stack
 	r2 = [sp++];
 	r1 = [sp++];
 	r0 = [sp++];
-	
+
 	rts;
 _SetupClocks.end:
 //-------------------------------------------
@@ -61,20 +61,20 @@ _TestDRQ:
 	[--sp] = r1;
 	[--sp] = r2;
 	[--sp] = p0;
-	
+
 	//-----------
 	p0.h = HI(FIO_FLAG_C);
 	p0.l = LO(FIO_FLAG_C);
 
 	p1.h = HI(FIO_FLAG_S);
 	p1.l = LO(FIO_FLAG_S);
-	
+
 	r0 = 0x0002 (Z);
 	//-----------
-DeadLock:	
+DeadLock:
 	r1 = 7 (Z);
 	w[p0] = r0;				// set
-	
+
 Wait1:
 	nop;
 	nop;
@@ -83,13 +83,13 @@ Wait1:
 	nop;
 
 	r1 += -1;
-	
+
 	cc = r1 == 0;
 	if !cc jump Wait1;
 	//-----------
 	r1 = 150 (Z);
 	w[p1] = r0;				// clear
-	
+
 Wait2:
 	nop;
 	nop;
@@ -102,13 +102,13 @@ Wait2:
 	cc = r1 == 0;
 	if !cc jump Wait2;
 	//-----------
-	jump DeadLock;	
-	
+	jump DeadLock;
+
 	p0 = [sp++];				// pop regs from stack
 	r2 = [sp++];
 	r1 = [sp++];
 	r0 = [sp++];
-	
+
 	rts;
 _TestDRQ.end:
 //-------------------------------------------

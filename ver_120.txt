@@ -1,23 +1,23 @@
-version 1.20 
+version 1.20
 - date: 28-01-2014
-- some small fixes were made to the SCSI part of the code to better comply with the 
+- some small fixes were made to the SCSI part of the code to better comply with the
   SCSI standard - fixed after more non-compliance reports from Uwe Seimet
 - time out handling in the SD / MMC part of the code was bit remade - now you shouldn't
-  have the device stuck in card initialization process even when the card doesn't 
+  have the device stuck in card initialization process even when the card doesn't
   cooperate with US (it happened from time to time, or on some weird cards)
-  
 
-version 1.13 
-- last change in the new revision made on 2013-05-01 according to info from 
+
+version 1.13
+- last change in the new revision made on 2013-05-01 according to info from
   Uwe Seimet (HDDRIVER author) on what's wrong and what should behave differently
 - changed (fixed) the Additional Sense Code for device when card is not present to
   0x3a (MEDIUM_NOT_PRESENT)
 - removed the dynamic UltraSatan device name in Inquiry SCSI command, because it caused
-  some issues with HDDRIVER, now the SD card slots are always displayed as UltraSatan 1 
+  some issues with HDDRIVER, now the SD card slots are always displayed as UltraSatan 1
   and UltraSatan 2 no matter what card is inserted
 - now replying with CHECK CONDITION and MEDIUM NOT PRESENT also on READ CAPACITY command
 - when card is changed, UltraSatan now returns NOT_READY_TO_READY_TRANSITION as
-  additional sense code - this is what other removable devices do and what 
+  additional sense code - this is what other removable devices do and what
   HDDRIVER checks for
 - returning now VENDOR (JOOKIE) and DEVICE NAME (UltraSatan), so when scanned for device,
   it will now look like 'JOOKIE UltraSatan 1' and 'JOOKIE UltraSatan 2'
@@ -32,7 +32,7 @@ version 1.05
 
 Version 1.00
 
-Uploaded on 2009-06-25, compiled few days before, 
+Uploaded on 2009-06-25, compiled few days before,
 finished another few days before the few days :)
 
 JOokie

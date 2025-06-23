@@ -17,5 +17,3 @@ BYTE Flash_WritePage(DWORD page, BYTE *buffer);
 void ShortDelay(void);
 void Flash_WriteBuffer(BYTE *buffer);
 //-----------------------------------------------
-
-

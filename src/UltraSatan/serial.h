@@ -5,8 +5,8 @@
 
 void uart_init(void);
 
-void uart_putc(BYTE ch); 
-void uart_putchar (BYTE ch); 		// replaces \n with \r\n 
+void uart_putc(BYTE ch);
+void uart_putchar (BYTE ch); 		// replaces \n with \r\n
 
 void uart_puts   (char* s);		// uses putc
 void uart_prints (char* s);		// uses putchar

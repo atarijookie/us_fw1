@@ -16,7 +16,7 @@ extern TDevice device[MAX_DEVICES];
 
 extern BYTE WrByte;				// byte from ST for device
 extern BYTE cmd[20];			// received command bytes
-extern BYTE len;					// length of received command 
+extern BYTE len;					// length of received command
 //------------------------------------
 extern BYTE shitHasHappened;
 //------------------------------------
@@ -25,88 +25,88 @@ void ProcICD(BYTE devIndex)
 {
 	BYTE justCmd, lun;
 	shitHasHappened = 0;
-	
+
 	#define WRITEOUT
-	
+
 	//----------------
 	// 1st we need to process the UltraSatan's special commands
 	// Their format is as follows:
-	// cmd[0] - (ACSI ID << 5) | 0x1f   - command in ICD format 
+	// cmd[0] - (ACSI ID << 5) | 0x1f   - command in ICD format
 	// cmd[1] - 0x20     - group code 1 (1 + 10 bytes long command) and command TEST UNIT READY
 	// cmd[2..3]         - the 'US' string (US as UltraSatan)
 	// cmd[4..7]         - special command code / string
 	// cmd[8..10]        - 3 bytes of parameters
-	
+
 	// so the complete command could look like this:
 	// 0x1f, 0x20, 'USRdFW', 0x01, 0x0010  (read sector 0x0010 of firmware 1)
-	
+
 	if(cmd[2]=='U' && cmd[3]=='S')									// some UltraSatan's specific commands?
 	{
 		if(!cmpn(&cmd[4], "RdFW", 4))									// firmware read?
 		{
 			Special_ReadFW();
-			return;			
+			return;
 		}
 		//---------
 		if(!cmpn(&cmd[4], "WrFW", 4))									// firmware write?
 		{
 			Special_WriteFW();
-			return;			
+			return;
 		}
 		//---------
 		if(!cmpn(&cmd[4], "RdSt", 4))									// read settings?
 		{
 			Special_ReadSettings();
-			return;			
+			return;
 		}
 		//---------
 		if(!cmpn(&cmd[4], "WrSt", 4))									// write settings?
 		{
 			Special_WriteSettings();
-			return;			
+			return;
 		}
 		//---------
 		if(!cmpn(&cmd[4], "RdCl", 4))									// read clock?
 		{
 			Special_ReadRTC();
-			return;			
+			return;
 		}
 		//---------
 		if(!cmpn(&cmd[4], "WrCl", 4))									// write clock?
 		{
 			Special_WriteRTC();
-			return;			
+			return;
 		}
 		//---------
 		if(!cmpn(&cmd[4], "CurntFW", 7))								// read the name of currently running FW?
 		{
 			Special_ReadCurrentFirmwareName();
-			return;			
+			return;
 		}
 		//---------
 		if(!cmpn(&cmd[4], "RdINQRN", 7))									// read INQUIRY name?
 		{
 			Special_ReadInquiryName();
-			return;			
+			return;
 		}
 		//---------
 		if(!cmpn(&cmd[4], "WrINQRN", 7))									// write INQUIRY name?
 		{
 			Special_WriteInquiryName();
-			return;			
+			return;
 		}
 		//---------
 		if(!cmpn(&cmd[4], "RdLog", 5))										// read command log?
 		{
 			Special_ReadLog();
-			return;			
+			return;
 		}
 		//---------
 	}
 	//----------------
 	justCmd	= cmd[1];							// get the command #
 	lun		= cmd[2] >> 5;						// get the LUN from the command.
-	
+
 	// The following commands support LUN in command, check if it's valid
 	// Note: INQUIRY also supports LUNs, but it should report in a different way...
 	if( justCmd == SCSI_C_READ_CAPACITY || justCmd == SCSI_C_READ10 ) {
@@ -123,7 +123,7 @@ void ProcICD(BYTE devIndex)
 		if((justCmd == SCSI_C_READ10) || (justCmd == SCSI_C_WRITE10) || (justCmd == SCSI_C_READ_CAPACITY))
 		{
 			ReturnStatusAccordingToIsInit(devIndex);
-			return;	
+			return;
 		}
 	}
 	//----------------
@@ -133,17 +133,17 @@ void ProcICD(BYTE devIndex)
 		if(justCmd != SCSI_C_INQUIRY)
 		{
 			ReturnUnitAttention(devIndex);
-			return;	
+			return;
 		}
 	}
 	//----------------
 	switch(justCmd)
 	{
-	case SCSI_C_READ_CAPACITY: 		
-									SCSI_ReadCapacity(devIndex); 
+	case SCSI_C_READ_CAPACITY:
+									SCSI_ReadCapacity(devIndex);
 		 							break;
 
-	case SCSI_C_INQUIRY:			
+	case SCSI_C_INQUIRY:
 									ICD7_to_SCSI6();
 		 							SCSI_Inquiry(devIndex);
 		 							break;
@@ -152,18 +152,18 @@ void ProcICD(BYTE devIndex)
 	case SCSI_C_WRITE10:			SCSI_ReadWrite10(devIndex, FALSE); break;
 	//----------------------------------------------------
 	case SCSI_C_VERIFY:				SCSI_Verify(devIndex); break;
-	
+
 	//----------------------------------------------------
-	default: 
+	default:
 		device[devIndex].LastStatus	= SCSI_ST_CHECK_CONDITION;
-		device[devIndex].SCSI_SK	= SCSI_E_IllegalRequest;		// other devices = error 
+		device[devIndex].SCSI_SK	= SCSI_E_IllegalRequest;		// other devices = error
 		device[devIndex].SCSI_ASC	= SCSI_ASC_INVALID_COMMAND_OPERATION_CODE;
 		device[devIndex].SCSI_ASCQ	= SCSI_ASCQ_NO_ADDITIONAL_SENSE;
 
 		PIO_read(device[devIndex].LastStatus);   // send status byte
 		break;
 	}
-} 
+}
 //---------------------------------------------
 void SCSI_Verify(BYTE devIndex)
 {
@@ -171,7 +171,7 @@ void SCSI_Verify(BYTE devIndex)
 	BYTE res=0;
 	WORD lenX, i;
 	BYTE foundError;
-  
+
 	sector  = cmd[3];			// get starting sector #
 	sector  = sector << 8;
 	sector |= cmd[4];
@@ -179,11 +179,11 @@ void SCSI_Verify(BYTE devIndex)
 	sector |= cmd[5];
 	sector  = sector << 8;
 	sector |= cmd[6];
- 
+
 	lenX  = cmd[8];	  	   		// get the # of sectors to read
 	lenX  = lenX << 8;
-	lenX |= cmd[9];	
-	
+	lenX |= cmd[9];
+
 	foundError = 0;					// no error found yet
 
 	if((cmd[2] & 0x02) == 0x02)		// BytChk == 1? : compare with data
@@ -197,7 +197,7 @@ void SCSI_Verify(BYTE devIndex)
 
 			if(res!=0)							// if error, then set flag
 				foundError = 1;
-		
+
 			sector++;							// next sector
 		}
 
@@ -207,7 +207,7 @@ void SCSI_Verify(BYTE devIndex)
 			device[devIndex].SCSI_SK	= SCSI_E_Miscompare;
 			device[devIndex].SCSI_ASC	= SCSI_ASC_VERIFY_MISCOMPARE;
 			device[devIndex].SCSI_ASCQ	= SCSI_ASCQ_NO_ADDITIONAL_SENSE;
-		
+
 			PIO_read(device[devIndex].LastStatus);   // send status byte
 		}
 		else									// no problem?
@@ -264,14 +264,14 @@ DMA_read(midlo);	// mid-Lo
 DMA_read(lo);		 	// Lo
 
 // return sector size
-DMA_read(0);				 // fixed to 512 B	  
-DMA_read(0);				 
+DMA_read(0);				 // fixed to 512 B
+DMA_read(0);
 DMA_read(2);
 DMA_read(0);
 
 PostDMA_read();
 
-SendOKstatus(devIndex);				
+SendOKstatus(devIndex);
 }
 //---------------------------------------------
 void ICD7_to_SCSI6(void)
@@ -289,7 +289,7 @@ void SCSI_ReadWrite10(BYTE devIndex, char Read)
 	DWORD sector, sectorEnd;
 	BYTE res=0;
 	WORD lenX;
-  
+
 	sector  = cmd[3];
 	sector  = sector << 8;
 	sector |= cmd[4];
@@ -297,16 +297,16 @@ void SCSI_ReadWrite10(BYTE devIndex, char Read)
 	sector |= cmd[5];
 	sector  = sector << 8;
 	sector |= cmd[6];
- 
+
 	lenX  = cmd[8];	  	   		// get the # of sectors to read
 	lenX  = lenX << 8;
-	lenX |= cmd[9];	
-	
+	lenX |= cmd[9];
+
 	//--------------------------------
 	sectorEnd = sector + ((DWORD)lenX) - 1;
-	
+
 	// if we're trying to address a sector beyond the last one - error!
-	if(sector >= device[devIndex].SCapacity || sectorEnd >= device[devIndex].SCapacity) {	
+	if(sector >= device[devIndex].SCapacity || sectorEnd >= device[devIndex].SCapacity) {
 		device[devIndex].LastStatus	= SCSI_ST_CHECK_CONDITION;
 		device[devIndex].SCSI_SK	= SCSI_E_IllegalRequest;
 		device[devIndex].SCSI_ASC	= SCSI_ASC_LBA_OUT_OF_RANGE;
@@ -314,7 +314,7 @@ void SCSI_ReadWrite10(BYTE devIndex, char Read)
 
 		PIO_read(device[devIndex].LastStatus);    // send status byte, long time-out
 		return;
-	}	
+	}
 	//--------------------------------
 	if(Read==TRUE)				// if read
 		res = SCSI_Read6_SDMMC(devIndex, sector, lenX);
@@ -325,7 +325,7 @@ void SCSI_ReadWrite10(BYTE devIndex, char Read)
 	{
 		SendOKstatus(devIndex);
 	}
-	else									// if error 
+	else									// if error
 	{
 		device[devIndex].LastStatus	= SCSI_ST_CHECK_CONDITION;
 		device[devIndex].SCSI_SK	= SCSI_E_MediumError;
@@ -335,10 +335,10 @@ void SCSI_ReadWrite10(BYTE devIndex, char Read)
 #ifdef WRITEOUT
 	if(shitHasHappened)
 		showCommand(0xc1, 12, device[devIndex].LastStatus);
-		
+
 	shitHasHappened = 0;
 #endif
-		
+
 		PIO_read(device[devIndex].LastStatus);    // send status byte, long time-out
 	}
 }

@@ -15,7 +15,3 @@ void Special_WriteInquiryName(void);
 
 void Special_ReadLog(void);
 //-----------------------------------------------
-
-
-
-

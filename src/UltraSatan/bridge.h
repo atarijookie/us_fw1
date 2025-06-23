@@ -4,12 +4,12 @@
 #define	E_TimeOut			0
 #define	E_OK					1
 #define	E_OK_A1				2
-#define	E_CARDCHANGE	3	
-#define	E_RESET				4	
+#define	E_CARDCHANGE	3
+#define	E_RESET				4
 
 //----------------------------
 // bridge function declarations
-	
+
 // send data from device to ST in PIO mode
 BYTE PIO_read(BYTE byte);
 
@@ -36,8 +36,7 @@ void PostDMA_write(void);
 
 //---------------------------------------
 /*
-char Read512(void);						 	// ST reads 512 bytes from buffer in Atmel  
+char Read512(void);						 	// ST reads 512 bytes from buffer in Atmel
 char Write512(void);						// ST writes 512 bytes to buffer in Atmel
 */
 //---------------------------------------
- 

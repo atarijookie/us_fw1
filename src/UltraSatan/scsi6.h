@@ -1,7 +1,7 @@
-// code for SCSI(6) commands support 
+// code for SCSI(6) commands support
 
 // function declarations
-void ProcSCSI6(BYTE devIndex); 
+void ProcSCSI6(BYTE devIndex);
 
 void SCSI_RequestSense(BYTE devIndex);
 void SCSI_FormatUnit(BYTE devIndex);
@@ -28,4 +28,3 @@ void Return_LUNnotSupported(BYTE devIndex);
 void SendEmptySecotrs(WORD sectors);
 
 void showCommand(WORD id, WORD length, WORD errCode);
-

@@ -21,7 +21,7 @@ volatile WORD GotBytes;
 extern BYTE shitHasHappened;
 //------------------------------------
 
-//#define USE_C_FUNCTIONS		
+//#define USE_C_FUNCTIONS
 
 //#define WITHOUT_ST
 // Functions
@@ -29,7 +29,7 @@ extern BYTE shitHasHappened;
 void mmcInit(void)
 {
 	int i;
-	
+
 	// initialize SPI interface
 	spiInit();
 	spiSetSPCKfreq(SPI_FREQ_SLOW);
@@ -40,62 +40,62 @@ BYTE mmcReset(BYTE spiID)
 	BYTE r1;
 	WORD retry;
 	BYTE isSD, buff[5], isSDHC;
-	
+
 	TimeOut_Start_ms(1000);
-	
+
 	spiSetSPCKfreq(SPI_FREQ_SLOW);
 	spiCShigh(0xff);
-	
+
 	// send dummy bytes with CS high before accessing
 	for(r1=0; r1<10; r1++)
 	{
 		spiTransferByte(0xFF);
-		
+
 		if(SPIstatus != TRUE)
 			return DEVICETYPE_NOTHING;
 	}
 
 	//---------------
-	// now send the card to IDLE state	
+	// now send the card to IDLE state
 	r1 = mmcSendCommand(spiID, MMC_GO_IDLE_STATE, 0);
-	
+
 	if(r1 != 1)
 		return DEVICETYPE_NOTHING;
 	//---------------
 	isSDHC	= FALSE;
 	isSD		= FALSE;
-	
+
 	r1 = mmcSendCommand5B(spiID, SDHC_SEND_IF_COND, 0x1AA, buff);		  // init SDHC card
-	
+
 	if(r1 == 0x01)				// if got the right response -> it's an SD or SDHC card
 	{
 		if(buff[3] == 0x01 && buff[4] == 0xaa)	// if the rest of R7 is OK (OK echo and voltage)
 		{
 			//--------------
 			retry = 0xffff;
-	
+
 			while(retry)
 			{
 				retry--;
-				
+
 				if(TimeOut_DidHappen()) {
 					retry = 0;
 					break;
 				}
-				
+
 				r1 = mmcSendCommand(spiID, 55, 0);		  // ACMD41 = CMD55 + CMD41
 
 				if(r1 != 1)						  // if invalid reply to CMD55, then it's MMC card
 				{
 					retry = 0;						// fuck, it's MMC card
-					break;			
+					break;
 				}
-		
+
 				r1 = mmcSendCommand(spiID, 41, 0x40000000);	// ACMD41 = CMD55 + CMD41 ---  HCS (High Capacity Support) bit set
 
 				if(r1 == 0)						  // if everything is OK, then it's SD card
 					break;
-					
+
 				if(TimeOut_DidHappen()) {
 					retry = 0;
 					break;
@@ -104,7 +104,7 @@ BYTE mmcReset(BYTE spiID)
 			//--------------
 			if(retry)									// if not timed out
 			{
-				r1 = mmcSendCommand5B(spiID, MMC_READ_OCR, 0, buff);		  
+				r1 = mmcSendCommand5B(spiID, MMC_READ_OCR, 0, buff);
 
 				if(r1 == 0)							// if command succeeded
 				{
@@ -116,8 +116,8 @@ BYTE mmcReset(BYTE spiID)
 					else
 						isSD		= TRUE;
 				}
-			}			
-		}		
+			}
+		}
 	}
 	//---------------
 	// if we came here, then it's initialized SD card or not initialized MMC card
@@ -132,42 +132,42 @@ BYTE mmcReset(BYTE spiID)
 	while(retry)
 	{
 		r1 = mmcSendCommand(spiID, 55, 0);		  // ACMD41 = CMD55 + CMD41
-		
+
 		if(r1 != 1)						  // if invalid reply to CMD55, then it's MMC card
-			break;			
-		
+			break;
+
 		r1 = mmcSendCommand(spiID, 41, 0);		  // ACMD41 = CMD55 + CMD41
-		
+
 		if(r1 == 0)						  // if everything is OK, then it's SD card
 		{
 		 	isSD = TRUE;
 			break;
 		}
-		
+
 		if(TimeOut_DidHappen()) {
 			retry = 0;
 			break;
 		}
-		
+
 		retry--;
 	}
-	
+
 	if(isSD && r1!=0)	   	   			 // if it's SD but failed to initialize
 		return DEVICETYPE_NOTHING;
-		
+
 	//-------------------------------
 	if(isSD==FALSE)
 	{
 	 	// try to initialize the MMC card
 		r1 = mmcCmdLow(spiID, MMC_SEND_OP_COND, 0, 0);
-	
+
 		if(r1 != 0)
 		  return DEVICETYPE_NOTHING;
 	}
-	
+
 	// set block length to 512 bytes
 	r1 = mmcSendCommand(spiID, MMC_SET_BLOCKLEN, 512);
-		
+
 	if(isSD==TRUE)
 	 	return DEVICETYPE_SD;
 	else
@@ -180,15 +180,15 @@ BYTE mmcCmd(BYTE cs, BYTE cmd, DWORD arg, BYTE retry, BYTE val)
 
 	do {
 		r1 = mmcSendCommand(cs, cmd, arg);
-			  
+
 		if(retry==0 || TimeOut_DidHappen())
 			return 0xff;
 
 		// do retry counter
 		retry--;
-		
+
 	} while(r1 != val);
-	
+
 	return r1;
 }
 //-----------------------------------------------
@@ -196,9 +196,9 @@ BYTE mmcCmdLow(BYTE cs, BYTE cmd, DWORD arg, BYTE val)
 {
  	BYTE r1;
 	WORD retry = 0xffff;
-	 
+
 	spiCSlow(cs);		   // CS to L
-	
+
 	do
 	{
 	  	// issue the command
@@ -207,7 +207,7 @@ BYTE mmcCmdLow(BYTE cs, BYTE cmd, DWORD arg, BYTE val)
 	  	spiTransferByte(0xff);
 
 		if(retry==0 || TimeOut_DidHappen()) {
-		
+
 			for(retry=0; retry<10; retry++)
 				spiTransferByte(0xff);
 
@@ -217,14 +217,14 @@ BYTE mmcCmdLow(BYTE cs, BYTE cmd, DWORD arg, BYTE val)
 
 		// do retry counter
 		retry--;
-			
+
 	} while(r1 != val);
 
 	for(retry=0; retry<10; retry++)
 		spiTransferByte(0xff);
-	
+
 	spiCShigh(cs);		   // CS to H
-	
+
 	return r1;
 }
 //-----------------------------------------------
@@ -260,11 +260,11 @@ BYTE mmcSendCommand5B(BYTE cs, BYTE cmd, DWORD arg, BYTE *buff)
 	// issue the command
 	r1 = mmcCommand(cmd, arg);
 	buff[0] = r1;
-	
-	// receive the rest of R7 register	
-	for(i=1; i<5; i++)										
+
+	// receive the rest of R7 register
+	for(i=1; i<5; i++)
 		buff[i] = spiTransferByte(0xFF);
-		
+
 	spiTransferByte(0xFF);
 
 	// release chip select
@@ -287,12 +287,12 @@ BYTE mmcCommand(BYTE cmd, DWORD arg)
 	spiTransferByte(arg>>16);
 	spiTransferByte(arg>>8);
 	spiTransferByte(arg);
-	
+
 	if(cmd == SDHC_SEND_IF_COND)
 		spiTransferByte(0x86);	 			// crc valid only for SDHC_SEND_IF_COND
 	else
 		spiTransferByte(0x95);	 			// crc valid only for MMC_GO_IDLE_STATE
-	
+
 	// end command
 	// wait for response
 	// if more than 8 retries, card has timed-out
@@ -303,16 +303,16 @@ BYTE mmcCommand(BYTE cmd, DWORD arg)
 
 		if(SPIstatus != TRUE)
 			break;
-		
+
 		if(r1 != 0xff)
 			break;
-		
+
 		if(retry == 0 || TimeOut_DidHappen())
 			break;
-			
+
 		retry--;
 	}
-	
+
 	// return response
 	return r1;
 }
@@ -325,7 +325,7 @@ BYTE mmcRead(BYTE cs, DWORD sector)
 	DWORD addr, addr2, deltaAddr;
 
 	TimeOut_Start_ms(1000);
-	
+
 	// assert chip select
 	spiCSlow(cs);		   // CS to L
 
@@ -350,7 +350,7 @@ BYTE mmcRead(BYTE cs, DWORD sector)
 	//------------------------
 	// wait for block start
 	i = 0x000fffff;				// v. 1.00
-	
+
 	while(i)
 	{
 #ifdef USE_C_FUNCTIONS
@@ -361,12 +361,12 @@ BYTE mmcRead(BYTE cs, DWORD sector)
 
 		if(r1 == MMC_STARTBLOCK_READ)				  // if it's the wanted byte
 			break;
-		
+
 		if(TimeOut_DidHappen()) {
 			i = 0;
 			break;
 		}
-		
+
 		i--;	  									  // decrement
 	}
 	//------------------------
@@ -403,7 +403,7 @@ BYTE mmcRead(BYTE cs, DWORD sector)
 
 	*pSPI_TDBR = (WORD) 0xff;
   byte = (BYTE) (*pSPI_RDBR);										// do one dummy read to init the transfer
-	
+
 	i = SPIreadSectorAsm();
 	//---------------------------------
 	CLEAR(*pSPI_CTL, (1<<14));										// disable SPI
@@ -414,12 +414,12 @@ BYTE mmcRead(BYTE cs, DWORD sector)
 	{
 		for(; i>0; i--)							// finish the sector
 			spiTransferByte(0xFF);
-			
+
 		shitHasHappened = 1;
 		uart_putc('x');
 	}
 	//---------------------------------
-	
+
 #endif
 //**********************************************************************
 //#define SLOW_PIO
@@ -427,7 +427,7 @@ BYTE mmcRead(BYTE cs, DWORD sector)
 #ifdef SLOW_PIO
 	for(i=0; i<0x200; i++)
 	{
-		
+
 #ifdef USE_C_FUNCTIONS
 		byte = spiTransferByte(0xFF);					// get byte
 #else
@@ -447,14 +447,14 @@ BYTE mmcRead(BYTE cs, DWORD sector)
 
 		 	for(; i<0x200; i++)							// finish the sector
 		  		spiTransferByte(0xFF);
-		  
+
 			break;										// quit
 		}
 	}
-#endif 
+#endif
 //**********************************************************************
 	PostDMA_read();
-	
+
 	// read 16-bit CRC
 	#ifdef USE_C_FUNCTIONS
 		spiTransferByte(0xFF);					// get byte
@@ -471,7 +471,7 @@ BYTE mmcRead(BYTE cs, DWORD sector)
 	spiCShigh(cs);		   // CS to H
 ///////////////////////////////////
 // !!! THIS HELPS TO SYNCHRONIZE THE THING !!!
-	for(i=0; i<3; i++)					
+	for(i=0; i<3; i++)
 		spiTransferByte(0xFF);
 ///////////////////////////////////
 
@@ -482,10 +482,10 @@ BYTE mmcRead(BYTE cs, DWORD sector)
 
 		return 0xff;
 	}
-		
+
 	//-----------------
 	// return success
-	return 0;	
+	return 0;
 }
 //-----------------------------------------------
 BYTE mmcReadMore(BYTE cs, DWORD sector, WORD count)
@@ -495,7 +495,7 @@ BYTE mmcReadMore(BYTE cs, DWORD sector, WORD count)
 	BYTE byte;
 
 	TimeOut_Start_ms(1000);
-	
+
 	// assert chip select
 	spiCSlow(cs);		   // CS to L
 
@@ -509,7 +509,7 @@ BYTE mmcReadMore(BYTE cs, DWORD sector, WORD count)
 	if(r1 != 0x00)
 	{
 		shitHasHappened = 1;
-		
+
  		spiTransferByte(0xFF);
 		spiCShigh(cs);		   // CS to H
 		return r1;
@@ -517,9 +517,9 @@ BYTE mmcReadMore(BYTE cs, DWORD sector, WORD count)
 
 	// read in data
 	PreDMA_read();
-	
+
 	quit = 0;
-	
+
 	for(j=0; j<count; j++)		   				// read this many sectors
 	{
 		// wait for block start
@@ -530,63 +530,63 @@ BYTE mmcReadMore(BYTE cs, DWORD sector, WORD count)
 			byte = spiTransferByte(0xFF);		// get byte
 
 			DMA_read(byte);									// send it to ST
-		
+
 #ifdef DEVNULL
 SectorBufer[i] = byte;
 #endif
-			
+
 			if(brStat != E_OK)		  							// if something was wrong
 			{
 				for(; i<0x200; i++)							// finish the sector
 		  		spiTransferByte(0xFF);
 
 		  		shitHasHappened = 1;
-		  		
+
 				quit = 1;
 				break;										// quit
 			}
-		}			
+		}
 		//---------------
 		if((count - j) == 1)	// if we've read the last sector
 			break;
-		
+
 		if(quit)   	 			// if error happened
-			break;		
-			
+			break;
+
 		// if we need to read more, then just read 16-bit CRC
 		spiTransferByte(0xFF);
 		spiTransferByte(0xFF);
 	}
 	//-------------------------------
 	PostDMA_read();
-	
+
 	if(quit)	  				// if error happened
 	{
 		shitHasHappened = 1;
-		
+
 		mmcCommand(MMC_STOP_TRANSMISSION, 0);			// send command instead of CRC
 
  		spiTransferByte(0xFF);
-		
+
 		// release chip select
 		spiCShigh(cs);		   // CS to H
 
 		return 0xff;
-	}	
+	}
 	//----------------------
 	// stop the transmition of next sector
 	mmcCommand(MMC_STOP_TRANSMISSION, 0);			// send command instead of CRC
 
 	spiTransferByte(0xFF);
-	
+
 	// release chip select
 	spiCShigh(cs);		   // CS to H
-	
+
 #ifdef DEVNULL
 //DumpBuffer();
 #endif
-	
-	return 0;	
+
+	return 0;
 }
 //-----------------------------------------------
 BYTE mmcWriteMore(BYTE cs, DWORD sector, WORD count)
@@ -597,23 +597,23 @@ BYTE mmcWriteMore(BYTE cs, DWORD sector, WORD count)
 	DWORD thisSector;
 
 	TimeOut_Start_ms(1000);
-	
+
 	// assert chip select
 	spiCSlow(cs);		   // CS to L
 
 	thisSector = sector;
-	
+
 	if(device[cs].Type != DEVICETYPE_SDHC)		// for non SDHC cards change sector into address
 		sector = sector<<9;
 
 	//--------------------------
-/*	
+/*
 	// for SD and SDHC cards issue an SET_WR_BLK_ERASE_COUNT command
-	if(device[cs].Type == DEVICETYPE_SDHC || device[cs].Type == DEVICETYPE_SD)		
+	if(device[cs].Type == DEVICETYPE_SDHC || device[cs].Type == DEVICETYPE_SD)
 	{
 		mmcCommand(55, 0);		  				// ACMD23 = CMD55 + CMD23
-		mmcCommand(23, (DWORD) count);	
-	}		
+		mmcCommand(23, (DWORD) count);
+	}
 */
 	//--------------------------
 	// issue command
@@ -629,11 +629,11 @@ BYTE mmcWriteMore(BYTE cs, DWORD sector, WORD count)
 		spiCShigh(cs);		   // CS to H
 		return r1;
 	}
-	
+
 	//--------------
 	// read in data
 	PreDMA_write();
-	
+
 	quit = 0;
 	//--------------
 	for(j=0; j<count; j++)		   								// read this many sectors
@@ -642,16 +642,16 @@ BYTE mmcWriteMore(BYTE cs, DWORD sector, WORD count)
 		{
 			shitHasHappened = 1;
 			uart_putc('u');
-			
+
 			quit = 1;
 			break;																	// quit
 		}
-		//-------------- 			
+		//--------------
 		while(spiTransferByte(0xFF) != 0xff);			// while busy
-		
+
 		spiTransferByte(MMC_STARTBLOCK_MWRITE);		// 0xfc as start write multiple blocks
-		//-------------- 			
-		
+		//--------------
+
 		for(i=0; i<0x200; i++)	   								// read this many bytes
 		{
 			r1 = DMA_write();			   	   						// get it from ST
@@ -667,18 +667,18 @@ BYTE mmcWriteMore(BYTE cs, DWORD sector, WORD count)
 				quit = 1;
 				break;																// quit
 			}
-			
+
 			spiTransferByte(r1);											// send it to card
-		}			
-		
+		}
+
 		// send more: 16-bit CRC
 		spiTransferByte(0xFF);
 		spiTransferByte(0xFF);
-		
+
 		thisSector++;															// increment real sector #
 		//---------------
 		if(quit)   	 			// if error happened
-			break;		
+			break;
 	}
 	//-------------------------------
 	PostDMA_write();
@@ -690,7 +690,7 @@ BYTE mmcWriteMore(BYTE cs, DWORD sector, WORD count)
 	while(spiTransferByte(0xFF) != 0xff);		// while busy
 	//-------------------------------
 	// for the MMC cards send the STOP TRANSMISSION also
-	if(device[cs].Type == DEVICETYPE_MMC)		
+	if(device[cs].Type == DEVICETYPE_MMC)
 	{
 		mmcCommand(MMC_STOP_TRANSMISSION, 0);
 
@@ -699,14 +699,14 @@ BYTE mmcWriteMore(BYTE cs, DWORD sector, WORD count)
 	//-------------------------------
 	spiTransferByte(0xFF);
 	spiCShigh(cs);		   										// CS to H
-	
+
 	if(quit)																// if failed, return error
 	{
 		shitHasHappened = 1;
 		uart_putc('q');
 		return 0xff;
 	}
-		
+
 	return 0;																// success
 }
 //-----------------------------------------------
@@ -718,7 +718,7 @@ BYTE mmcReadJustForTest(BYTE cs, DWORD sector)
 	DWORD addr, addr2, deltaAddr;
 
 	TimeOut_Start_ms(1000);
-	
+
 	// assert chip select
 	spiCSlow(cs);		   // CS to L
 
@@ -743,19 +743,19 @@ BYTE mmcReadJustForTest(BYTE cs, DWORD sector)
 	//------------------------
 	// wait for block start
 	i = 0x000fffff;
-	
+
 	while(i != 0)
 	{
 		r1 = spiTransferByte(0xFF);					// get byte
 
 		if(r1 == MMC_STARTBLOCK_READ)				  // if it's the wanted byte
 			break;
-		
+
 		if(TimeOut_DidHappen()) {
 			i = 0;
 			break;
 		}
-		
+
 		i--;	  									  // decrement
 	}
 	//------------------------
@@ -783,23 +783,23 @@ BYTE mmcReadJustForTest(BYTE cs, DWORD sector)
 	spiCShigh(cs);		   // CS to H
 
 	// return success
-	return 0;	
+	return 0;
 }
 //-----------------------------------------------
 BYTE mmcWrite(BYTE cs, DWORD sector)
 {
 	BYTE r1;
 	DWORD i;
-	
+
 	TimeOut_Start_ms(1000);
-	
+
 	//-----------------
 	// assert chip select
 	spiCSlow(cs);		   // CS to L
-	
+
 	if(device[cs].Type != DEVICETYPE_SDHC)		// for non SDHC cards change sector into address
 		sector = sector<<9;
-		
+
 	// issue command
 	r1 = mmcCommand(MMC_WRITE_BLOCK, sector);
 
@@ -808,16 +808,16 @@ BYTE mmcWrite(BYTE cs, DWORD sector)
 	{
 		shitHasHappened = 1;
 		uart_putc('f');
-		
+
  		spiTransferByte(0xFF);
 		spiCShigh(cs);		   // CS to H
 
 		return r1;
 	}
-	
+
 	// send dummy
 	spiTransferByte(0xFF);
-	
+
 	// send data start token
 	spiTransferByte(MMC_STARTBLOCK_WRITE);
 	// write data
@@ -825,7 +825,7 @@ BYTE mmcWrite(BYTE cs, DWORD sector)
 	PreDMA_write();
 //==================================================
 #define WRITE_SLOW
-	
+
 #ifdef WRITE_SLOW
 
 	for(i=0; i<0x200; i++)
@@ -840,12 +840,12 @@ BYTE mmcWrite(BYTE cs, DWORD sector)
 		{
 			shitHasHappened = 1;
 			uart_putc('g');
-		
+
 		 	for(; i<0x200; i++)							// finish the sector
 		  		spiTransferByte(0);
-	
+
 			break;										// quit
-		}  
+		}
 
 #ifdef USE_C_FUNCTIONS
 		spiTransferByte(r1);					// send byte
@@ -853,24 +853,24 @@ BYTE mmcWrite(BYTE cs, DWORD sector)
 		spiTransferByteAsm(r1);
 #endif
 	}
-	
-#endif	
+
+#endif
 //==================================================
-		
+
 	PostDMA_write();
-	
+
 	// write 16-bit CRC (dummy values)
 	spiTransferByte(0xFF);
 	spiTransferByte(0xFF);
-	
+
 	// read data response token
 	r1 = spiTransferByte(0xFF);
-	
+
 	if( (r1&MMC_DR_MASK) != MMC_DR_ACCEPT)
 	{
 		shitHasHappened = 1;
 		uart_putc('h');
-		
+
  		spiTransferByte(0xFF);
 		spiCShigh(cs);		   // CS to H
 		return r1;
@@ -880,19 +880,19 @@ BYTE mmcWrite(BYTE cs, DWORD sector)
 	//------------------------
 	// wait for block start
 	i = 0x000fffff;
-	
+
 	while(i != 0)
 	{
 	 	r1 = spiTransferByte(0xFF);		   			  // receive byte
-		
+
 		if(r1 != 0)									   // if it's the wanted byte
 			break;
-		
+
 		if(TimeOut_DidHappen()) {
 			i = 0;
 			break;
 		}
-			
+
 		i--;	  									  // decrement
 	}
 	//------------------------
@@ -903,78 +903,78 @@ BYTE mmcWrite(BYTE cs, DWORD sector)
 
 		spiTransferByte(0xFF);
 		spiCShigh(cs);		   // CS to H
-		
+
 		return 0xff;
 	}
-	//------------------------	
+	//------------------------
 	spiTransferByte(0xFF);
 	spiCShigh(cs);		   	// CS to H
-	
+
 //	DumpBuffer();
-		
+
   return 0;							// return success
 }
 //--------------------------------------------------------
-/** 
-*   Retrieves the CSD Register from the mmc 
-* 
-*   @return      Status response from cmd 
-**/ 
-BYTE MMC_CardType(BYTE cs, unsigned char *buff) 
-{ 
- BYTE byte, i; 
- 
+/**
+*   Retrieves the CSD Register from the mmc
+*
+*   @return      Status response from cmd
+**/
+BYTE MMC_CardType(BYTE cs, unsigned char *buff)
+{
+ BYTE byte, i;
+
  // assert chip select
 	spiCSlow(cs);		   // CS to L
 
  // issue the command
  byte = mmcCommand(MMC_SEND_CSD, 0);
 
- if (byte!=0)					 // if error 
+ if (byte!=0)					 // if error
  {
 	spiCShigh(cs);		   // CS to H
- 	spiTransferByte(0xFF);			// Clear SPI 
-    
+ 	spiTransferByte(0xFF);			// Clear SPI
+
 	return byte;
- } 
+ }
 
  // wait for block start
  for(i=0; i<16; i++)
  	{
 	byte = spiTransferByte(0xFF);
-	 
+
 	if(byte == MMC_STARTBLOCK_READ)
 		break;
 	}
 
- if (byte!=MMC_STARTBLOCK_READ)		 // if error 
+ if (byte!=MMC_STARTBLOCK_READ)		 // if error
  {
 	spiCShigh(cs);		   // CS to H
- 	spiTransferByte(0xFF);			// Clear SPI 
-    
+ 	spiTransferByte(0xFF);			// Clear SPI
+
 	return byte;
- } 
+ }
 
  // read the data
  for (i=0; i<16; i++)
- 	 buff[i] = spiTransferByte(0xFF); 
+ 	 buff[i] = spiTransferByte(0xFF);
 
  spiCShigh(cs);		   // CS to H
- spiTransferByte(0xFF);			// Clear SPI 
-    
- return 0; 
-} 
+ spiTransferByte(0xFF);			// Clear SPI
+
+ return 0;
+}
 //--------------------------------------------------------
-DWORD SDHC_Capacity(BYTE cs) 
-{ 
- BYTE byte,data, multi, blk_len; 
- DWORD c_size; 
- DWORD sectors; 
+DWORD SDHC_Capacity(BYTE cs)
+{
+ BYTE byte,data, multi, blk_len;
+ DWORD c_size;
+ DWORD sectors;
  BYTE buff[16];
- 
+
 	TimeOut_Start_ms(1000);
- 
-	byte = MMC_CardType(cs, buff); 
+
+	byte = MMC_CardType(cs, buff);
 
 	if(byte!=0)								// if failed to get card type
 		return 0xffffffff;
@@ -987,57 +987,57 @@ DWORD SDHC_Capacity(BYTE cs)
 	c_size = ((DWORD)(buff[7] & 0x3F) << 16) | ((DWORD)buff[8] << 8) | ((DWORD)(buff[9]));
 	sectors = (c_size+1) << 10;              // get MaxSectors -> mcap=(csize+1)*512k -> msec=mcap/BytsPerSec(fix)
 
-	return sectors; 
+	return sectors;
 }
 //--------------------------------------------------------
-/** 
-*   Calculates the capacity of the MMC in blocks 
-* 
-*   @return   uint32 capacity of MMC in blocks or -1 in error; 
-**/ 
-DWORD MMC_Capacity(BYTE cs) 
-{ 
- BYTE byte,data, multi, blk_len; 
- DWORD c_size; 
- DWORD sectors; 
+/**
+*   Calculates the capacity of the MMC in blocks
+*
+*   @return   uint32 capacity of MMC in blocks or -1 in error;
+**/
+DWORD MMC_Capacity(BYTE cs)
+{
+ BYTE byte,data, multi, blk_len;
+ DWORD c_size;
+ DWORD sectors;
  BYTE buff[16];
- 
+
  TimeOut_Start_ms(1000);
- 
- byte = MMC_CardType(cs, buff); 
+
+ byte = MMC_CardType(cs, buff);
 
  if (byte!=0)
  	return 0xffffffff;
-    
- // got info okay 
+
+ // got info okay
  blk_len = 0x0F & buff[5]; // this should equal 9 -> 512 bytes for cards <= 1 GB
- 
- /*   ; get size into reg 
-      ;     6            7         8 
-      ; xxxx xxxx    xxxx xxxx    xxxx xxxx 
-      ;        ^^    ^^^^ ^^^^    ^^ 
- */ 
- 
- data    = (buff[6] & 0x03) << 6; 
- data   |= (buff[7] >> 2); 
- c_size  = data << 4; 
- data    = (buff[7] << 2) | ((buff[8] & 0xC0)>>6); 
- c_size |= data; 
-       
-      /*   ; get multiplier 
-         ;   9         10 
-         ; xxxx xxxx    xxxx xxxx 
-         ;        ^^    ^ 
-      */ 
-	  
- multi    = ((buff[9] & 0x03 ) << 1); 
- multi   |= ((buff[10] & 0x80) >> 7); 
- sectors  = (c_size + 1) << (multi + 2); 
- 
+
+ /*   ; get size into reg
+      ;     6            7         8
+      ; xxxx xxxx    xxxx xxxx    xxxx xxxx
+      ;        ^^    ^^^^ ^^^^    ^^
+ */
+
+ data    = (buff[6] & 0x03) << 6;
+ data   |= (buff[7] >> 2);
+ c_size  = data << 4;
+ data    = (buff[7] << 2) | ((buff[8] & 0xC0)>>6);
+ c_size |= data;
+
+      /*   ; get multiplier
+         ;   9         10
+         ; xxxx xxxx    xxxx xxxx
+         ;        ^^    ^
+      */
+
+ multi    = ((buff[9] & 0x03 ) << 1);
+ multi   |= ((buff[10] & 0x80) >> 7);
+ sectors  = (c_size + 1) << (multi + 2);
+
  if(blk_len != 9)											// sector size > 512B?
  	sectors = sectors << (blk_len - 9);	// then capacity of card is bigger
- 
- return sectors; 
+
+ return sectors;
 }
 //--------------------------------------------------------
 BYTE EraseCard(BYTE deviceIndex)
@@ -1046,10 +1046,10 @@ BYTE res;
 TDevice *dev;
 
  TimeOut_Start_ms(5000);
- 
+
  dev = &device[deviceIndex];
 
- if(dev->Type != DEVICETYPE_MMC && dev->Type != DEVICETYPE_SD 
+ if(dev->Type != DEVICETYPE_MMC && dev->Type != DEVICETYPE_SD
  			&& dev->Type != DEVICETYPE_SDHC)	// not a SD/MMC card?
  {
 	return 1;
@@ -1098,7 +1098,7 @@ TDevice *dev;
 	}
 
 	while(spiTransferByte(0xFF) == 0);	 	   // wait while the card is busy
-	
+
 	spiCShigh(deviceIndex);		   // CS to H
 
 	spiTransferByte(0xFF);
@@ -1114,7 +1114,7 @@ BYTE mmcCompare(BYTE cs, DWORD sector)
 	BYTE byteSD, byteST;
 
 	TimeOut_Start_ms(1000);
-	
+
 	// assert chip select
 	spiCSlow(cs);		   // CS to L
 
@@ -1138,8 +1138,8 @@ BYTE mmcCompare(BYTE cs, DWORD sector)
 
 	//------------------------
 	// wait for block start
-	i = 0x000fffff;				
-	
+	i = 0x000fffff;
+
 	while(i)
 	{
 #ifdef USE_C_FUNCTIONS
@@ -1150,12 +1150,12 @@ BYTE mmcCompare(BYTE cs, DWORD sector)
 
 		if(r1 == MMC_STARTBLOCK_READ)				  // if it's the wanted byte
 			break;
-			
+
 		if(TimeOut_DidHappen()) {
 			i = 0;
 			break;
-		}		
-			
+		}
+
 		i--;	  									  // decrement
 	}
 	//------------------------
@@ -1180,7 +1180,7 @@ BYTE mmcCompare(BYTE cs, DWORD sector)
 
 	for(i=0; i<0x200; i++)
 	{
-		
+
 #ifdef USE_C_FUNCTIONS
 		byteSD = spiTransferByte(0xFF);					// get byte from card
 #else
@@ -1192,7 +1192,7 @@ BYTE mmcCompare(BYTE cs, DWORD sector)
 		if((brStat != E_OK) || (byteST != byteSD))		// if something was wrong
 		{
 			shitHasHappened = 1;
-		
+
 			if(brStat != E_OK)
 				uart_putc('%');
 			else
@@ -1200,14 +1200,14 @@ BYTE mmcCompare(BYTE cs, DWORD sector)
 
 		 	for(; i<0x200; i++)							// finish the sector
 		  		spiTransferByte(0xFF);
-		  
+
 			break;										// quit
 		}
 	}
-//#endif 
+//#endif
 //**********************************************************************
 	PostDMA_write();
-	
+
 	// read 16-bit CRC
 	#ifdef USE_C_FUNCTIONS
 		spiTransferByte(0xFF);					// get byte
@@ -1224,7 +1224,7 @@ BYTE mmcCompare(BYTE cs, DWORD sector)
 	spiCShigh(cs);		   // CS to H
 ///////////////////////////////////
 // !!! THIS HELPS TO SYNCHRONIZE THE THING !!!
-	for(i=0; i<3; i++)					
+	for(i=0; i<3; i++)
 		spiTransferByte(0xFF);
 ///////////////////////////////////
 
@@ -1235,10 +1235,9 @@ BYTE mmcCompare(BYTE cs, DWORD sector)
 
 		return 0xff;
 	}
-		
+
 	//-----------------
 	// return success
-	return 0;	
+	return 0;
 }
 //-----------------------------------------------
-

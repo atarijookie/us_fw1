@@ -20,7 +20,7 @@ extern TDevice device[MAX_DEVICES];
 BYTE PIO_read(BYTE byte)
 {
 
-	
+
 return 0;
 }
 //---------------------------------------
@@ -31,7 +31,7 @@ return 0;
 //        - E_OK or E_TimeOut
 BYTE PIO_write(void)
 {
-	
+
 return 0;								// get only the data
 }
 //---------------------------------------
@@ -51,7 +51,7 @@ void PostDMA_read(void)
 // output - E_OK or E_TimeOut
 BYTE DMA_read(BYTE byte)
 {
-	
+
 return 0;	 			   				// return result
 }
 //---------------------------------------
@@ -78,11 +78,11 @@ BYTE DMA_write(void)
 BYTE GetCmdByte(void)
 {
 	WORD wVal, wSignals, wData;
-	
+
 	wVal = *pFIO_DIR;										// read current PF directions
 	wVal = wVal & (~aDATA_MASK);				// clear the bits where the ACSI data is
 	*pFIO_DIR = wVal;										// ACSI data as input
-	
+
 	*pFIO_INEN = aDATA_MASK;						// enable ACSI DATA pins as inputs
 
 	while(TRUE)
@@ -93,9 +93,8 @@ BYTE GetCmdByte(void)
 		if((wSignals & (aRESET | aCS | aA1)) == aRESET)		// wait while RESET is H, aCS is L, aA1 is L
 			break;
 	}
-				
+
 	wData = wData >> 8;									// shift data to the lower nibble
 	return (BYTE)wData;									// return the data
 }
 //---------------------------------------
-

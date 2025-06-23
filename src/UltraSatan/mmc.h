@@ -97,10 +97,10 @@ BYTE mmcWriteMore(BYTE cs, DWORD sector, WORD count);
 BYTE mmcCommand(BYTE cmd, DWORD arg);
 BYTE mmcSendCommand5B(BYTE cs, BYTE cmd, DWORD arg, BYTE *R7buff);
 
-//   Retrieves the CSD Register from the mmc 
+//   Retrieves the CSD Register from the mmc
 BYTE MMC_CardType(BYTE cs, unsigned char *buff);
 
-// Calculates the capacity of the MMC in blocks 
+// Calculates the capacity of the MMC in blocks
 DWORD MMC_Capacity(BYTE cs);
 
 DWORD SDHC_Capacity(BYTE cs);
@@ -108,4 +108,3 @@ DWORD SDHC_Capacity(BYTE cs);
 BYTE EraseCard(BYTE deviceIndex);
 
 #endif
-
